@@ -1,25 +1,27 @@
-name: tests
-
-on:
-  push:
-  pull_request:
-
+name: portable-validation
+on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install
-        run: python -m pip install -e '.[dev]'
-      - name: Test
-        run: pytest -q
+      - name: Install portable development dependencies
+        run: python -m pip install -e '.[dev,analysis]'
+      - name: Format
+        run: python -m ruff format --check src tests scripts workflows
       - name: Lint
-        run: ruff check src tests scripts
+        run: python -m ruff check src tests scripts workflows
+      - name: Portable tests
+        run: python -m pytest -q -m 'not integration' --cov=refblind --cov-report=term-missing
+      - name: Synthetic integration test (not chemistry)
+        run: refblind demo --groups 40 --output results/ci-synthetic --plots

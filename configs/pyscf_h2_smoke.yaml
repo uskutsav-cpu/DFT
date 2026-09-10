@@ -1,0 +1,14 @@
+# Infrastructure smoke test, not an OMol teacher or high-quality reaction benchmark.
+backend: pyscf
+method_id: pyscf-pbe-sto3g-smoke
+method: DFT
+functional: PBE
+basis: sto-3g
+fidelity: dft
+memory_mb: 1000
+threads: 1
+max_atoms: 4
+max_cycle: 100
+conv_tol: 1.0e-10
+grid_level: 3
+relative_cost: 1.0

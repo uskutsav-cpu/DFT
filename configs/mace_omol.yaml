@@ -1,0 +1,10 @@
+backend: mace_omol
+method_id: mace-omol-0
+model_path: extra_large
+device: cpu
+dtype: float64
+teacher_id: OMol25-wB97M-V-def2-TZVPD-ORCA6
+allow_model_download: false
+forces: true
+relative_cost: 0.03
+checkpoint_sha256: null

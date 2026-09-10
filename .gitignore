@@ -30,3 +30,23 @@ figures/*
 .env
 .env.*
 secrets/
+
+# v0.2 local environments, acquired data and validation artifacts
+.venv*/
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+build/
+dist/
+external/
+data/
+plans/
+runs/
+models/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+configs/local-*.yaml
+configs/local-*.json

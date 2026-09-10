@@ -5,6 +5,8 @@ from itertools import combinations
 
 import numpy as np
 
+from .validation import nonnegative, vector
+
 
 def _relation(a: float, b: float, tie_tol: float) -> int:
     delta = float(a) - float(b)
@@ -25,11 +27,10 @@ def ordering_accuracy(
     ``tie_tol``. A one-element sequence has accuracy 1 by convention.
     """
 
-    if tie_tol < 0:
-        raise ValueError("tie_tol must be non-negative")
+    nonnegative(tie_tol, "tie_tol")
 
-    cand = np.asarray(candidate, dtype=float).reshape(-1)
-    ref = np.asarray(reference, dtype=float).reshape(-1)
+    cand = vector(candidate, "candidate")
+    ref = vector(reference, "reference")
     if cand.size != ref.size:
         raise ValueError("candidate and reference must have equal length")
     if cand.size == 0:
@@ -42,8 +43,7 @@ def ordering_accuracy(
         return 1.0
 
     preserved = sum(
-        _relation(cand[i], cand[j], tie_tol) == _relation(ref[i], ref[j], tie_tol)
-        for i, j in pairs
+        _relation(cand[i], cand[j], tie_tol) == _relation(ref[i], ref[j], tie_tol) for i, j in pairs
     )
     return preserved / len(pairs)
 
