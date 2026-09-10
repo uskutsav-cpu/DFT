@@ -1,0 +1,17 @@
+# Candidate only. Do not set teacher_verified until actual equivalence is audited.
+backend: orca
+method_id: omol-dft-candidate
+header: "! wB97M-V def2-TZVPD TightSCF DEFGRID3"
+blocks: "%scf MaxIter 300 end"
+executable: orca
+fidelity: dft
+nprocs: 1
+maxcore_mb: 1000
+memory_budget_mb: 2000
+timeout_seconds: 3600
+teacher_id: OMol25-wB97M-V-def2-TZVPD-ORCA6
+teacher_verified: false
+teacher_audit_note: ""
+relative_cost: 1.0
+assets: {}
+asset_sha256: {}

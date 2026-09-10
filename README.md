@@ -1,120 +1,143 @@
-# RefBlind: Reference-Blind Failure Detection for MLIP/QM Workflows
+# RefBlind
+### Reference-blind error analysis and sequential MLIP → DFT → high-level escalation
 
-**Status: ACTIVE RESEARCH / PRE-RESULTS.** This repository defines hypotheses, benchmark interfaces, metrics, and an escalation-policy scaffold. It does **not** claim that reference-blind failures are common, that the proposed diagnostics work, or that the proposed policy outperforms baselines until those claims are supported by benchmark results.
+**v0.2.0 · Research software · No empirical chemistry result is claimed.**
 
-## Research question
+RefBlind asks whether a machine-learning interatomic potential (MLIP) can reproduce
+its DFT teacher while that teacher still mispredicts a chemically important
+observable. It provides an auditable benchmark pipeline, not an assertion that
+this happens often or that a proposed diagnostic solves it.
 
-When a DFT-trained machine-learning interatomic potential (MLIP) agrees with its DFT teacher, can the underlying DFT reference still be chemically wrong enough to change a barrier, pathway, state ordering, or mechanistic conclusion—and can those cases be detected cheaply enough to escalate only the calculations that need higher-level electronic structure?
-
-## Core decomposition
-
-For an energy-like observable,
-
-\[
-\varepsilon_{\mathrm{surrogate}} = E_{\mathrm{MLIP}} - E_{\mathrm{DFT}}
-\]
-
-\[
-\varepsilon_{\mathrm{reference}} = E_{\mathrm{DFT}} - E_{\mathrm{HL}}
-\]
-
-and therefore
-
-\[
-E_{\mathrm{MLIP}}-E_{\mathrm{HL}}
-= \varepsilon_{\mathrm{surrogate}} + \varepsilon_{\mathrm{reference}}.
-\]
-
-Here `HL` means a **state-appropriate higher-level reference**, not automatically CCSD(T). Systems with substantial multireference character require a method appropriate to that regime.
-
-A **reference-blind failure** is operationally a case where MLIP-vs-DFT error is small, but DFT-vs-higher-level error is chemically consequential—ideally defined by a changed decision such as barrier/pathway/state ordering, not by a universal kcal/mol cutoff alone.
-
-## Hypotheses
-
-1. MLIP uncertainty/OOD scores are primarily sensitive to surrogate-model mismatch and may miss reference-method error.
-2. Inexpensive electronic-structure diagnostics may provide complementary signal about DFT-reference reliability.
-3. A calibrated escalation policy may preserve chemically correct decisions at lower computational cost than always using the highest-fidelity method.
-
-## Planned pipeline
+For a balanced reaction observable `Q` (a barrier, reaction energy, or state gap):
 
 ```text
-reactive structures / pathways
-          |
-          v
-     foundation MLIP
-          |
-          +---- MLIP uncertainty / OOD features
-          |
-          v
-          DFT
-          |
-          +---- inexpensive electronic diagnostics
-          |
-          v
-    escalation policy
-      /          \
-  accept       higher-level
- MLIP/DFT   electronic structure
-      \          /
-       chemical decision
+surrogate error = Q_MLIP − Q_DFT
+reference error = Q_DFT  − Q_reference
+total error     = Q_MLIP − Q_reference
 ```
 
-The primary evaluation target is **decision preservation under compute constraints**, not just pointwise energy MAE.
+Use **the same geometries, states, stoichiometry, and units** at every level.
+Comparing arbitrary absolute energies from different implementations is not the
+benchmark. A published high-level observable is an evaluation label, **not** a
+completed high-level calculation that an escalation policy can receive for free.
 
-## Repository layout
-
-```text
-src/refblind/       Core scientific bookkeeping and policy logic
-configs/            Explicit benchmark and escalation configuration
-benchmarks/         Manifest schema + example reaction entries
-scripts/            Reproducible smoke/demo utilities
-workflows/          Pipeline entry-point templates
-tests/              Unit tests for error and decision logic
-docs/               Research question, benchmark protocol, reproducibility
-.github/workflows/   CI
-```
-
-## Quick start
+## Run immediately: portable synthetic integration test
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev]'
-pytest -q
-python scripts/smoke_demo.py
+python -m pip install -e '.[dev,analysis]'
+python -m pytest -q -m 'not integration'
+refblind doctor
+refblind demo --output results/synthetic-demo --plots
 ```
 
-## Baselines to compare
+Use a fresh output directory on repeated runs. The demo creates a marked synthetic
+study table, grouped splits, fitted/calibrated models, a frozen policy artifact,
+held-out predictions, metrics, CSV/Markdown reports, and three figures. It is a
+software test with intentionally designed signal—not evidence about real DFT.
 
-| Policy | MLIP UQ | Electronic diagnostics | DFT escalation | HL escalation |
-|---|---:|---:|---:|---:|
-| Always MLIP | no | no | no | no |
-| Always DFT | no | no | yes | no |
-| MLIP-UQ threshold | yes | no | yes | no |
-| Fixed hierarchical thresholds | yes | yes | yes | yes |
-| Calibrated/learned gate | yes | yes | yes | yes |
-| Oracle ceiling | eval only | eval only | yes | yes |
+## Implemented
 
-The oracle is an analysis ceiling only, never a deployable method.
+| Layer | Working functionality |
+|---|---|
+| Data | Typed structures/calculations/observables; charge–multiplicity and atom/charge balance checks; explicit units; immutable hashes; strict JSON/YAML |
+| Import | Local GMTKN55 `.res`, XYZ/coord, `.CHRG` and `.UHF` import; no execution of downloaded shell text; explicit reference-review records |
+| Chemistry interfaces | ORCA single-point input/output and timeout handling; optional UMA, MACE-OMOL, OrbMol ASE adapters; optional small-system PySCF HF/DFT/CCSD(T)/finite-basis FCI |
+| Jobs | Dry-run plans; SQLite claim tokens; cached result integrity; explicit retries; failure retention; per-invocation resource/budget guards; file exchange with externally run ORCA jobs |
+| Features | Ensemble summaries, Mahalanobis OOD, orbital-gap/spin helpers; costed auxiliary feature import; stage whitelist; no label-only features |
+| Modeling | Train-only imputation/scaling; regularized logistic models; separate calibration set; JSON model serialization; group-max conformal diagnostic |
+| Evaluation | Exact-tie AUROC/AP, Brier/calibration, risk–coverage, grouped bootstrap, error decomposition, decision-order auditing, policy Pareto analysis |
+| Decision policy | Actual two-stage access; screening-all-DFT baseline; optional costed early screen; explicit accept/execute/abstain; shared operation cost deduplication |
+| Reproducibility | Separate fit/evaluate commands, frozen hashes and splits, environment capture, auditable exclusions, manuscript-oriented CSV/JSON/Markdown/PNG outputs |
 
-## Primary metrics
+**Integration status matters.** The portable tests exercise fabricated chemistry
+outputs and mocked external APIs. No ORCA/UMA/MACE/OrbMol computation was executed
+when this upgrade was authored. PySCF is optional, and its real smoke test is
+marked `integration`. See [validation scope](docs/validation.md).
 
-- reference-blind failure prevalence under a pre-registered operational definition;
-- AUROC/AUPRC for detecting chemically consequential reference failures;
-- calibration and risk-coverage behavior;
-- barrier/pathway/state-ordering preservation;
-- fraction of DFT and higher-level calls;
-- compute-normalized error / utility;
-- stratification by chemistry, charge, multiplicity, reaction class, method, and diagnostic regime.
+## The sequential decision is not a one-shot threshold
 
-## Scientific guardrails
+```text
+MLIP outputs (+ optional separately charged cheap screen)
+  ├─ accept MLIP
+  └─ run DFT
+       ├─ accept DFT
+       └─ request state-appropriate high level
+             ├─ use an actually available high-level result
+             └─ abstain if unsupported, failed, absent, or over budget
+```
 
-- Never use higher-level labels as gate features at evaluation time.
-- Keep raw electronic-structure outputs immutable.
-- Record method, basis, code/version, charge, multiplicity, convergence flags, geometry provenance, and random seeds where applicable.
-- Separate model-selection data from final test systems.
-- Treat failed SCF/optimization/TS calculations as outcomes with provenance, not silently dropped rows.
-- Report negative results and regimes where the gate fails.
-- Do not convert exploratory thresholds into post-hoc “pre-registered” thresholds.
+Low MLIP uncertainty can miss a reference-blind failure entirely. The comparison
+therefore includes both a pure-UQ route and a DFT-screen-all route; the software
+does not pretend that DFT diagnostics were available before DFT. A calibrated
+early screen must be supplied and paid for; the code does not invent one.
 
-See [`docs/benchmark_protocol.md`](docs/benchmark_protocol.md), [`docs/research_question.md`](docs/research_question.md), and [`docs/reproducibility.md`](docs/reproducibility.md).
+## Start a real pilot without launching compute
+
+```bash
+refblind validate examples/h2-smoke.json
+refblind plan --dataset examples/h2-smoke.json \
+  --config configs/orca_candidate.yaml --output plans/h2-orca.json
+refblind run --plan plans/h2-orca.json --output runs/h2-orca
+```
+
+The last command is a **dry run**. The H2 geometries are illustrative input
+fixtures with no high-level label and no transition-state claim. Only add
+`--execute --limit 1` after installing the backend and auditing its configuration.
+The full benchmark path is documented in [real pilot](docs/real_pilot.md).
+
+The included ORCA header is **not verified OMol25 teacher equivalence**. Matching a
+functional/basis name is insufficient: basis assets, numerical settings, electronic
+state conventions, and implementation all require review. Assembly refuses a
+matched-teacher claim unless explicitly verified, or the user chooses the clearly
+marked `--allow-unverified-teacher` exploratory route.
+
+## Repository map
+
+```text
+src/refblind/
+  schema.py, datasets.py, units.py     data contracts and chemistry bookkeeping
+  gmtkn.py, review.py                 import and explicit reference review
+  calculators/                       optional computational engines
+  execution.py, jobstore.py           resumable calculation workflow
+  exchange.py, attachments.py         audited external outputs/features
+  observables.py, assembly.py         species → balanced observables → study table
+  features.py, learning.py            stage-safe preprocessing and risk models
+  splits.py, uncertainty.py           grouped partitions and UQ helpers
+  policy.py, replay.py, study.py      staged cost-aware evaluation
+  metrics.py, reporting.py            statistics, figures, and reports
+  pathways.py                        mapped interpolation / optional ASE NEB
+  cli.py                             refblind command-line interface
+configs/   examples/   scripts/   tests/   docs/
+```
+
+The original v0.1 scalar/error and one-shot-policy APIs remain available for
+compatibility. New research workflows use `policy.py` and `study.py`, not the
+legacy `EscalationPolicy.decide()` as a deployable sequential algorithm.
+
+## Research scope and limitations
+
+The default 1/3 kcal/mol tolerances and relative costs are **illustrative settings,
+not preregistered or experimentally calibrated values**. The primary study reports
+an observable-error event and conditional eligible-test accuracy; it does not
+turn a large error into a proven mechanism reversal. Failed, duplicate,
+questionable-reference, and ambiguous-label observations remain in exclusion
+reports. A clean complete-case result is not a reliability claim over every raw
+calculation. No finite data set or conformal diagnostic here certifies all chemistry.
+
+Read [architecture](docs/architecture.md), [data contract](docs/data_contract.md),
+[teacher audit](docs/teacher_audit.md), [limitations](docs/limitations.md), and the
+[completion roadmap](docs/roadmap.md). Primary software sources are recorded in
+[docs/sources.md](docs/sources.md).
+
+## Development
+
+```bash
+bash scripts/run_checks.sh
+```
+
+No model weights, licensed ORCA executable, benchmark archive, private transcript,
+or credential is bundled. Model/code/data licenses must be checked independently.
+No project-wide license decision is made by this upgrade. No institutional
+ownership, collaboration agreement, or publication acceptance is implied.

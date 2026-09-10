@@ -1,0 +1,10 @@
+backend: uma
+method_id: uma-s-1p1-omol
+model_name: uma-s-1p1
+device: cpu
+teacher_id: OMol25-wB97M-V-def2-TZVPD-ORCA6
+allow_model_download: false
+# Set this only after separately accepting checkpoint access/license and storage needs.
+forces: true
+relative_cost: 0.03
+checkpoint_sha256: null

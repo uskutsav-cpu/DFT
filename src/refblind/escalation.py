@@ -1,7 +1,15 @@
+"""Legacy one-shot heuristic, kept for compatibility; use policy.SequentialPolicy.
+
+This API assumes all scores are already available; it is NOT the deployed
+sequential policy and must not be used to claim compute savings.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+
+from .validation import positive
 
 
 class EscalationDecision(str, Enum):
@@ -30,8 +38,8 @@ class EscalationPolicy:
             value = getattr(self, name)
             if not 0 <= value <= 1:
                 raise ValueError(f"{name} must lie in [0, 1]")
-        if self.dft_relative_cost <= 0 or self.high_level_relative_cost <= 0:
-            raise ValueError("relative costs must be positive")
+        positive(self.dft_relative_cost, "dft_relative_cost")
+        positive(self.high_level_relative_cost, "high_level_relative_cost")
 
     @staticmethod
     def _risk(value: float, name: str) -> float:

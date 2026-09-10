@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "engineering_fixture": true,
+    "no_reference_labels": true,
+    "not_a_reaction_or_ts_benchmark": true,
+    "synthetic": false
+  },
+  "name": "h2-input-smoke",
+  "observables": [
+    {
+      "decision_group": null,
+      "group_id": "h2-smoke",
+      "id": "h2-stretch",
+      "kind": "relative_energy",
+      "metadata": {},
+      "reference": null,
+      "terms": [
+        {
+          "coefficient": -1,
+          "structure_id": "h2-short"
+        },
+        {
+          "coefficient": 1,
+          "structure_id": "h2-stretched"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "structures": [
+    {
+      "charge": 0,
+      "id": "h2-short",
+      "multiplicity": 1,
+      "positions_angstrom": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.74
+        ]
+      ],
+      "source": "Illustrative input fixture; not experimental geometry",
+      "symbols": [
+        "H",
+        "H"
+      ]
+    },
+    {
+      "charge": 0,
+      "id": "h2-stretched",
+      "multiplicity": 1,
+      "positions_angstrom": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.2
+        ]
+      ],
+      "source": "Illustrative stretched geometry; NOT a transition state",
+      "symbols": [
+        "H",
+        "H"
+      ]
+    }
+  ]
+}

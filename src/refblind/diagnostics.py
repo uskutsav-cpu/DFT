@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from .validation import nonnegative
+
 
 def weighted_risk(features: Mapping[str, float], weights: Mapping[str, float]) -> float:
     """Return a transparent weighted mean of normalized diagnostic risk scores.
@@ -19,7 +21,7 @@ def weighted_risk(features: Mapping[str, float], weights: Mapping[str, float]) -
     denominator = 0.0
     for key, value in features.items():
         value = float(value)
-        weight = float(weights[key])
+        weight = nonnegative(weights[key], "weight")
         if not 0 <= value <= 1:
             raise ValueError(f"feature {key!r} must lie in [0, 1]")
         if weight < 0:

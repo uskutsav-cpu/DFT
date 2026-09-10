@@ -1,0 +1,11 @@
+backend: orbmol
+method_id: orbmol-v1-omol25
+model_name: orb_v3_conservative_omol
+device: cpu
+dtype: float64
+teacher_id: OMol25-wB97M-V-def2-TZVPD-ORCA6
+relative_cost: 0.01
+allow_model_download: false
+forces: true
+# Current upstream main API. Pin and smoke-test your installed release.
+# orbmol_v2 is a separate model trained on OMol25 + OPoly26; do not silently substitute.

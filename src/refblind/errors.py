@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .validation import finite, nonnegative
+
 
 @dataclass(frozen=True)
 class ErrorDecomposition:
@@ -19,7 +21,8 @@ def decompose_error(mlip: float, dft: float, high_level: float) -> ErrorDecompos
     up to floating-point arithmetic.
     """
 
-    surrogate = float(mlip) - float(dft)
+    mlip, dft, high_level = finite(mlip), finite(dft), finite(high_level)
+    surrogate = mlip - dft
     reference = float(dft) - float(high_level)
     total = float(mlip) - float(high_level)
     return ErrorDecomposition(surrogate, reference, total)
@@ -42,11 +45,19 @@ def reference_blind_failure(
     Thresholds must be non-negative and should be frozen before final testing.
     """
 
-    if surrogate_abs_max < 0 or reference_abs_min < 0:
-        raise ValueError("error thresholds must be non-negative")
+    nonnegative(surrogate_abs_max, "surrogate_abs_max")
+    nonnegative(reference_abs_min, "reference_abs_min")
+    for value in (
+        decomposition.surrogate_error,
+        decomposition.reference_error,
+        decomposition.total_error,
+    ):
+        finite(value, "error")
+    if not isinstance(decision_changed, bool):
+        raise ValueError("decision_changed must be boolean")
 
     low_surrogate_error = abs(decomposition.surrogate_error) <= surrogate_abs_max
-    consequential_reference_error = (
-        abs(decomposition.reference_error) >= reference_abs_min or bool(decision_changed)
+    consequential_reference_error = abs(decomposition.reference_error) >= reference_abs_min or bool(
+        decision_changed
     )
     return low_surrogate_error and consequential_reference_error

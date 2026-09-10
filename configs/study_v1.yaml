@@ -1,0 +1,13 @@
+# Development defaults. Freeze after the pilot; not retrospective preregistration.
+seed: 42
+surrogate_tolerance: 1.0
+reference_tolerance: 3.0
+decision_tolerance: 3.0
+cost_weight: 0.05
+cost_scale: 20.0
+l2: 1.0
+bootstrap_repetitions: 1000
+exploratory: false
+stage1_features: [ensemble_std, ood_distance, cheap_screen]
+stage2_features: [ensemble_std, ood_distance, cheap_screen, homo_lumo_gap_ev, spin_contamination, scf_cycles, fod]
+thresholds: [0.1, 0.25, 0.5, 0.75, 0.9]
