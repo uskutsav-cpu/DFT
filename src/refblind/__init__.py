@@ -9,9 +9,9 @@ __all__ = [
     "EscalationDecision",
     "EscalationPolicy",
     "decompose_error",
-    "reference_blind_failure",
     "ordering_accuracy",
     "ordering_preserved",
+    "reference_blind_failure",
 ]
 
 __version__ = "0.1.0"
