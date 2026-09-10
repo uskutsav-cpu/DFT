@@ -1,0 +1,10 @@
+# Risk scores are expected to be calibrated to [0, 1] before this policy is interpreted.
+policy:
+  mlip_uq_trigger: 0.50
+  electronic_risk_trigger: 0.50
+  cost_penalty: 0.05
+  dft_relative_cost: 1.0
+  high_level_relative_cost: 20.0
+
+# These are scaffolding defaults, not claimed optimal values.
+# Tune only on training/validation data; freeze before final test evaluation.

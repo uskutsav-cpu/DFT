@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Large / generated scientific outputs
+raw_outputs/
+results/*
+!results/README.md
+figures/*
+!figures/README.md
+*.chk
+*.gbw
+*.wfn
+*.wfx
+*.cube
+*.hess
+*.traj
+
+# Secrets / machine-local config
+.env
+.env.*
+secrets/

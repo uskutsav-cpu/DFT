@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the repository. A formal publication citation will be added if/when a manuscript is released."
+title: "RefBlind: Reference-Blind Failure Detection for MLIP/QM Workflows"
+type: software
+authors:
+  - name: "Utsav"
+version: 0.1.0
+repository-code: "https://github.com/uskutsav-cpu/DFT"

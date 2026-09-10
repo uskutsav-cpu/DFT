@@ -1,0 +1,2 @@
+system_id,reaction_class,charge,multiplicity,mlip_model,dft_method,basis,high_level_method,decision_type,notes
+example-001,placeholder,0,1,MODEL_NAME,DFT_METHOD,BASIS_SET,HL_METHOD,barrier_ordering,Schema example only; not a research datum

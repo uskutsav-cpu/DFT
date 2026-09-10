@@ -1,0 +1,33 @@
+project: refblind
+status: pre-results
+
+# Placeholder study configuration. Freeze a version before confirmatory evaluation.
+error_definition:
+  surrogate_error: "E_MLIP - E_DFT"
+  reference_error: "E_DFT - E_HL"
+
+reference_blind_definition:
+  surrogate_abs_max: 1.0      # project energy units; placeholder until protocol freeze
+  reference_abs_min: 3.0      # project energy units; placeholder until protocol freeze
+  decision_change_overrides_reference_threshold: true
+
+chemical_decisions:
+  - barrier_ordering
+  - pathway_ordering
+  - state_ordering
+  - intermediate_ordering
+
+splits:
+  strategy: chemistry_grouped
+  validation_fraction: 0.20
+  test_fraction: 0.20
+  prevent_reaction_family_leakage: true
+
+reporting:
+  include_failed_calculations: true
+  stratify_by:
+    - reaction_class
+    - charge
+    - multiplicity
+    - dft_method
+    - high_level_method
